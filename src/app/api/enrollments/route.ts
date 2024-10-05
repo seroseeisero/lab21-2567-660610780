@@ -1,8 +1,7 @@
-
 import { checkToken } from "@lib/checkToken";
-import { getPrisma } from "@lib/getPrisma";
 import { Payload } from "@lib/types";
 import { NextRequest, NextResponse } from "next/server";
+import { getPrisma } from "@lib/getPrisma";
 
 export const GET = async () => {
   const payload = checkToken();
@@ -15,6 +14,7 @@ export const GET = async () => {
       { status: 401 }
     );
   }
+
 
   // Type casting to "Payload" and destructuring to get data
   const { role, studentId } = <Payload>payload;
@@ -56,7 +56,7 @@ export const POST = async (request: NextRequest) => {
       { status: 401 }
     );
   }
-  const { role, studentId } = <Payload>payload;
+  const { role , studentId} = <Payload>payload;
 
   if (role === "ADMIN") {
     return NextResponse.json(
@@ -81,46 +81,40 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
+  // Coding in lecture
   const prisma = getPrisma();
-
-  // Check if course exists
-  const course = await prisma.course.findFirst({ //or findUnique
-    where: { courseNo: courseNo },
+  
+  const foundcourseNo = await prisma.course.findFirst({ 
+      where: { courseNo : courseNo}
   });
-
-  if(!course){
+  if(!foundcourseNo) {
     return NextResponse.json(
-        {
-          ok: false,
-          message: "Course number does not exist",
-        },
-        { status: 404 }
-      );
-    }
-
-  //check if course already enrolled
-  const enrolled = await prisma.enrollment.findFirst({
-    where: {
-      courseNo: courseNo,
-      studentId: studentId,
-    },
-  });
-
-  if (enrolled) {
-    return NextResponse.json(
-      { ok: false, message: "You already registered this course" },
-      { status: 400 }
+      {
+        ok: false,
+        message: "Course number does not exist",
+      },
+      { status: 404 }
     );
   }
-
-  //add course to database (enrollments collection)
-    await prisma.enrollment.create({
-      data: {
-        courseNo: courseNo,
-        studentId: studentId,
+  const foundcourse = await prisma.enrollment.findFirst({ 
+    where: { studentId: studentId, courseNo: courseNo }
+  });
+  if(foundcourse) {
+    return NextResponse.json(
+      {
+        ok: false,
+        message: "You already registered this course",
       },
-    })
-  
+      { status: 409 }
+    );
+  }
+  await prisma.enrollment.create({
+    data: {
+      studentId: studentId,
+      courseNo: courseNo,
+    }
+  });
+
   return NextResponse.json({
     ok: true,
     message: "You has enrolled a course successfully",
@@ -174,7 +168,7 @@ export const DELETE = async (request: NextRequest) => {
       },
     },
   });
-  
+
   return NextResponse.json({
     ok: true,
     message: "You has dropped from this course. See you next semester.",

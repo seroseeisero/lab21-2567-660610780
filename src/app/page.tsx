@@ -13,8 +13,8 @@ import {
   Title,
 } from "@mantine/core";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   // All courses state
