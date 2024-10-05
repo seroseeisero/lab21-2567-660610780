@@ -1,15 +1,15 @@
 "use client";
 
+import Footer from "@components/Footer";
 import { $authenStore } from "@lib/authenStore";
 import { Container, Group, Loader, Title } from "@mantine/core";
+import axios from "axios";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
-import Footer from "@components/Footer";
-import axios from "axios";
 
-import { Inter } from "next/font/google";
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
+import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,8 +38,8 @@ export default function RootLayout({
           headers: { Authorization: `Bearer ${token}` },
         });
         $authenStore.set({ token, authenUsername });
-      } catch (err:any) {
-        console.log(err.message);
+      } catch (err) {
+        // console.log(err.message);
         isTokenValid = false;
       }
     }
