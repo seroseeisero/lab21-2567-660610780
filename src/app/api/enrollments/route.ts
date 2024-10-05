@@ -1,7 +1,8 @@
+
 import { checkToken } from "@lib/checkToken";
+import { getPrisma } from "@lib/getPrisma";
 import { Payload } from "@lib/types";
 import { NextRequest, NextResponse } from "next/server";
-import { getPrisma } from "@lib/getPrisma";
 
 export const GET = async () => {
   const payload = checkToken();
@@ -80,46 +81,46 @@ export const POST = async (request: NextRequest) => {
     );
   }
 
-  // Coding in lecture
   const prisma = getPrisma();
 
-  const course = await prisma.course.findFirst({
+  // Check if course exists
+  const course = await prisma.course.findFirst({ //or findUnique
     where: { courseNo: courseNo },
   });
 
   if(!course){
     return NextResponse.json(
-      {
-        ok: false,
-        message: "Course number does not exist",
-      },
-      { status: 404 }
-    );
-  }
+        {
+          ok: false,
+          message: "Course number does not exist",
+        },
+        { status: 404 }
+      );
+    }
 
-  const courseEnroll = await prisma.enrollment.findFirst({
+  //check if course already enrolled
+  const enrolled = await prisma.enrollment.findFirst({
     where: {
       courseNo: courseNo,
       studentId: studentId,
     },
   });
 
-  if (courseEnroll) {
+  if (enrolled) {
     return NextResponse.json(
-      { ok: false, 
-        message: "You already registered this course" 
-      },
+      { ok: false, message: "You already registered this course" },
       { status: 400 }
     );
   }
 
-  await prisma.enrollment.create({
-    data: {
-      courseNo: courseNo,
-      studentId: studentId,
-    }
-  })
-
+  //add course to database (enrollments collection)
+    await prisma.enrollment.create({
+      data: {
+        courseNo: courseNo,
+        studentId: studentId,
+      },
+    })
+  
   return NextResponse.json({
     ok: true,
     message: "You has enrolled a course successfully",
@@ -171,9 +172,9 @@ export const DELETE = async (request: NextRequest) => {
       courseNo: courseNo,
       studentId: studentId,
       },
-    }
+    },
   });
-
+  
   return NextResponse.json({
     ok: true,
     message: "You has dropped from this course. See you next semester.",

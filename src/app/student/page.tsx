@@ -15,9 +15,9 @@ import {
 } from "@mantine/core";
 
 import { useStore } from "@nanostores/react";
+import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import axios from "axios";
 
 export default function StudentPage() {
   const [myEnrollments, setMyEnrollments] = useState<Course[] | null>(null);
